@@ -1,0 +1,11 @@
+Instruction on Running Kubota's Program
+
+-------------------------------------------
+Adding library
+-------------------------------------------
+1. Copy folder "SaliencyToolbox" and "JuddSaliencyModel" to "toolbox" in the matlab install directory. Usually it should be C:\Program Files\MATLAB\R2012b\
+gbvs
+
+
+2. Run addpath(genpath('C:\Program Files\MATLAB\R2012b\toolbox\SaliencyToolbox\')); in the matlab
+3. Run addpath(genpath('C:\Program Files\MATLAB\R2012b\toolbox\JuddSaliencyModel\')); in the matlab
