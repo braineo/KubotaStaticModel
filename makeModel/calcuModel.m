@@ -8,41 +8,35 @@
 % faceFeature: Gaussian face feature
 % subjectIndex: ID of test subject
 
-% Try to use all samples for individuals
-function  [mInfo_tune, mNSS_tune, opt] = calcuModel20130926(opt_set, EXPALLFixations, featureGBVS, faceFeatures, sampleinfo, sampleinfoStat,subjecti)
-
+function  [mInfo_tune, mNSS_tune, opt] = calcuModel(opt_set, EXPALLFixations, featureGBVS, faceFeatures, sampleinfo, sampleinfoStat,subjecti)
+    tic
     opt = opt_set;
     opt.start_time = datestr(now,'dd-mmm-yyyy HH:MM:SS');
     M = opt.M;
     N = opt.N;
     tool = toolFunc(opt); % return distance on screen by angle? not really understand
-    %% initialize settings
-    positiveSampleSize = sampleinfoStat{subjecti}.PositiveRegion;
-    negativeSampleSize = sampleinfoStat{subjecti}.NegativeRegion;
+    %% initialize training matrix
+    fprintf('Start Calculation on Subject#%d...\n',subjecti);
+
+    num_feat_A = opt.featNumber; %total number of features
+    if(opt.enable_angle)
+        featurePixelValueNear = zeros(opt.posSampleSizeAll, 3*num_feat_A*opt.n_region); % 3 directions, feature numbers, n regions
+        featurePixelValueFar = zeros(opt.posSampleSizeAll*opt.negaPosRatio, 3*num_feat_A*opt.n_region);
+    else
+        featurePixelValueNear = zeros(opt.posSampleSizeAll, num_feat_A*opt.n_region);
+        featurePixelValueFar = zeros(opt.posSampleSizeAll*opt.negaPosRatio, num_feat_A*opt.n_region);
+    end
+
+    fprintf('Get training sample...\n');
+
+    countNearAll = 0;
+    countFarAll = 0;
 
     order_fromfirst = opt.n_order_fromfirst;
 
-   
-    
-
-        fprintf('Start Calculation on Subject#%d...\n',subjecti);
-
-        countNearAll = 0;
-        countFarAll = 0;
-        num_feat_A = 10; %total number of features
-        if(opt.enable_angle)
-            featurePixelValueNear = zeros(sum(positiveSampleSize), 3*num_feat_A*opt.n_region); % 3 directions, 10 features, n regions
-            featurePixelValueFar = zeros(sum(negativeSampleSize),3*num_feat_A*opt.n_region);
-        else
-            featurePixelValueNear = zeros(sum(positiveSampleSize), num_feat_A*opt.n_region);
-            featurePixelValueFar = zeros(sum(negativeSampleSize),num_feat_A*opt.n_region);
-        end
-
-        %% 
-
-        fprintf('Get training sample...\n'); tic
-        selectedPositiveSample = [];
-        selectedNegativeSample = [];
+    for imagei = opt.trainImgIndex
+        % postive and negative sample (pixel position)
+        sampleinfo = makeSampleInfo(opt, allFixations, subjecti, imagei);
         for regioni = 1:opt.n_region
             posPointer = 1;
             negPointer = 1;
