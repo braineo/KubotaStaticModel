@@ -8,7 +8,7 @@
 % faceFeature: Gaussian face feature
 % subjectIndex: ID of test subject
 
-function  [mInfo_tune, mNSS_tune, opt] = calcuModel(opt_set, EXPALLFixations, featureMaps, faceFeatures,subjecti)
+function  [mInfo_tune, mNSS_tune, opt] = calcuModel(opt_set, allFixations, featureMaps, faceFeatures,subjecti)
     tic
     opt = opt_set;
     opt.start_time = datestr(now,'dd-mmm-yyyy HH:MM:SS');
@@ -38,7 +38,7 @@ function  [mInfo_tune, mNSS_tune, opt] = calcuModel(opt_set, EXPALLFixations, fe
         if(isempty(sampleinfo))
             continue
         end
-        [pos, neg] = getFeatureSample(opt, sampleinfo, videoi);
+        [pos, neg] = getFeatureSample(opt, sampleinfo, featureMaps, faceFeatures, imagei);
         posSize = size(pos, 1);
         negSize = size(neg, 1);
         featurePixelValueNear(countNearAll+1: countNearAll+posSize, :) = pos;

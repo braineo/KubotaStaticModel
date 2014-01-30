@@ -2,13 +2,13 @@ function [thresholdLength, thresholdAngle, n_samples_each_region] = getThreshold
 
 tool = toolFunc(opt);
 
-fprintf('Calculate thresholdLength ...'); tic
+fprintf('Calculate thresholdLength ...\n'); tic
 
 dis = zeros(100000,1);
 c_sample_saccade=0;
 for imgidx=1:450
-    for subidx=1:length(EXPALLFixations{imgidx})
-        fix_length = size(EXPALLFixations{imgidx}{subidx}.medianXY, 1);
+    for subidx=opt.thresholdSubjectIndex
+        fix_length = size(EXPALLFixations{subidx}{imgidx}.medianXY, 1);
         if(fix_length < 2)
             continue
         end
@@ -16,14 +16,14 @@ for imgidx=1:450
         for i=2:fix_length
             valid_flag = 1;
             %% delete gaze points where are out of range, and whose distance is less than a mininum value      
-            if(EXPALLFixations{imgidx}{subidx}.medianXY(i, 1) < 0 || EXPALLFixations{imgidx}{subidx}.medianXY(i, 2) < 0 || ...
-               EXPALLFixations{imgidx}{subidx}.medianXY(i, 1) >= opt.width || EXPALLFixations{imgidx}{subidx}.medianXY(i, 2) >= opt.height)
+            if(EXPALLFixations{subidx}{imgidx}.medianXY(i, 1) < 0 || EXPALLFixations{subidx}{imgidx}.medianXY(i, 2) < 0 || ...
+               EXPALLFixations{subidx}{imgidx}.medianXY(i, 1) >= opt.width || EXPALLFixations{subidx}{imgidx}.medianXY(i, 2) >= opt.height)
                 valid_flag = 0;
             end
-            t_px = EXPALLFixations{imgidx}{subidx}.medianXY(i-1, 1)/opt.minimize_scale;
-            t_py = EXPALLFixations{imgidx}{subidx}.medianXY(i-1, 2)/opt.minimize_scale;
-            t_nx = EXPALLFixations{imgidx}{subidx}.medianXY(i, 1)/opt.minimize_scale;
-            t_ny = EXPALLFixations{imgidx}{subidx}.medianXY(i, 2)/opt.minimize_scale;
+            t_px = EXPALLFixations{subidx}{imgidx}.medianXY(i-1, 1)/opt.minimize_scale;
+            t_py = EXPALLFixations{subidx}{imgidx}.medianXY(i-1, 2)/opt.minimize_scale;
+            t_nx = EXPALLFixations{subidx}{imgidx}.medianXY(i, 1)/opt.minimize_scale;
+            t_ny = EXPALLFixations{subidx}{imgidx}.medianXY(i, 2)/opt.minimize_scale;
             t_dis = norm([t_px-t_nx t_py-t_ny]);
 
             if((opt.discard_short_saccade > 0) && (t_dis < opt.discard_short_saccade))
@@ -32,7 +32,7 @@ for imgidx=1:450
             
             if(valid_flag == 1)
                 c_sample_saccade = c_sample_saccade + 1;
-                dis(c_sample_saccade,:) = [t_dis];
+                dis(c_sample_saccade,:) = t_dis;
             end
 
             clear t_px t_py t_nx t_ny t_dis valid_flag
@@ -84,7 +84,7 @@ elseif (strcmp(opt.thresholdLengthType, 'input'))
 end
 
 if(set_flag==0)
-    %'l_uni' or 'input'‚à¤§ƒGƒ‰[
+    %'l_uni' or 'input'?????G???[
     maxlength = dis_sort(end, 1);
     region_dif = maxlength/opt.n_region;
     region_base = 0;

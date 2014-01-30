@@ -2,7 +2,7 @@
 % this code is only valid for static model
 % error will raise if used in motion model
 
-function sampleInfo = makeSampleInfo(opt_set,saccadeData,ALLFeatures, subjecti)
+function sampleInfo = makeSampleInfo(opt_set,saccadeData, subjecti, imagei)
 
    
     opt = opt_set;
@@ -11,7 +11,7 @@ function sampleInfo = makeSampleInfo(opt_set,saccadeData,ALLFeatures, subjecti)
     tool = toolFunc(opt); % return distance on screen by angle? not really understand
     sampleInfo = {};
     
-    fprintf('Subject #%02d video #%03d trainning data...\n', subjecti, imagei);
+    fprintf('Subject #%02d Image #%03d trainning data...\n', subjecti, imagei);
 
     nthSaccade = opt.n_order_fromfirst;
 
@@ -88,7 +88,7 @@ function sampleInfo = makeSampleInfo(opt_set,saccadeData,ALLFeatures, subjecti)
     end
     
     %for regioni = 1:opt.n_region
-        sampleInfo{1} = infomatRegionedNear(:,[2,3,6,8,9]);
-        sampleInfo{2} = infomatRegionedFar(:,[2,3,6,8,9]);
-        % 1X, 2. Y, 3. Region number, 4. Angle(index) 5. timeTag (frame number)
+        sampleInfo{1} = infomatRegionedNear(:,[2,3,6,8]);
+        sampleInfo{2} = infomatRegionedFar(:,[2,3,6,8]);
+        % 1. X, 2. Y, 3. Region number, 4. Angle(index)
     %end

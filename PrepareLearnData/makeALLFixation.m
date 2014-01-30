@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%% Change Parameter here %%%%%%%%%%%%%%%%%%%%%%%%%%%
 datafolder = '../Data/prefDataCSV/';
-savefile = '..Data/EXPALLFixationsPref.mat';
+savefile = '../Data/EXPALLFixationsPref.mat';
 datasetSize = 450;
 testSubjectNumber = 25;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -19,7 +19,7 @@ for imgidx = 1:datasetSize
         else
             eyedata = load(datafile);
             [data,Fix,Sac] = getFixations(eyedata);
-            EXPALLFixations{imgidx}{length(EXPALLFixations{imgidx})+1}=Fix;
+            EXPALLFixations{subject}{imgidx}=Fix;
         end
     end
 end

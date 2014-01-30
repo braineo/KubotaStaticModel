@@ -4,7 +4,7 @@
 
 function sample_saccade = getTTsamples(opt, allFixations, subjecti, imagei)
 
-    sample_saccade = zeros(100000,9);
+    sample_saccade = zeros(100000,8);
     testingsamles = {};
     c_sample_saccade=0;
 
@@ -32,7 +32,7 @@ function sample_saccade = getTTsamples(opt, allFixations, subjecti, imagei)
         end
 
         c_sample_saccade = c_sample_saccade + 1;
-        sample_saccade(c_sample_saccade,:) = [imagei fixIndex-1 t_px t_py t_nx t_ny t_dis valid_flag timeTag];
+        sample_saccade(c_sample_saccade,:) = [imagei fixIndex-1 t_px t_py t_nx t_ny t_dis valid_flag];
 
         %fprintf(fid, '%f,%d,%d,%f\n', valid_flag, imagei, i-1, tool.get_angle(t_dis));
         clear t_px t_py t_nx t_ny t_dis

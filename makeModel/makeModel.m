@@ -2,7 +2,7 @@
 % Divide into 3 regions
 % Angle disabled
 
-clear all
+clear
 info = {};
 info.time_stamp = datestr(now,'yyyymmddHHMM');
 info.start_time = datestr(now,'dd-mmm-yyyy HH:MM:SS');
@@ -16,7 +16,7 @@ info.start_time = datestr(now,'dd-mmm-yyyy HH:MM:SS');
 opt = {};
 
 modelType = [2,4];
-opt.trainImgIndex = 1:450;
+opt.trainImgIndex = 151:300; % images with these indices will be used in training
 
 %%
 fprintf('Load EXPALLFixations, EXPALLFeatures...'); tic
@@ -58,26 +58,25 @@ opt.thresholdAngleInit = {5, 8, 11, 14, 20, 57};
 
 %% ----------------- SETTING -----------------------------
 opt.n_order_fromfirst = 1; % from the first to nth saccade are used
-opt.thresholdSubjectIndex = []; % Data of these subjects is used to determined threshold length
+opt.thresholdSubjectIndex = 1:12; % Data of these subjects is used to determined threshold length
 opt.thresholdLengthType = 's_uni'; % how threshold is determined
 opt.n_region = 3; % region number
 opt.enable_angle = 0;
-opt.featNumber = 15; % feature numbers in 1 region
+opt.featNumber = 10; % feature numbers in 1 region
 opt.subjectNumber = 1; % number of test subjects
-opt.stimuliNumber = 434; % number of stimuli
+opt.stimuliNumber = 450; % number of stimuli
 opt.posSampleSizeAll = 400000; % size of positive sample for 1 test subject
-opt.negaPosRatio = 20; % ratio of negaSize:posSize
-opt.trainImgIndex = []; % images with these indices will be used in training
+opt.negaPosRatio = 1000; % ratio of negaSize:posSize
+
 %% ----------------- SETTING -----------------------------
 
 for order_fromfirst=1:opt.n_order_fromfirst % to nth saccade
-    [thresholdLength, thresholdAngle, n_samples_each_region] = getThresholdLength(order_fromfirst, allFixations, opt);
+    [thresholdLength, thresholdAngle, n_samples_each_region] = getThresholdLength(order_fromfirst, EXPALLFixations, opt);
     opt.thresholdLength{order_fromfirst} = thresholdLength;
     opt.thresholdAngle{order_fromfirst} = thresholdAngle;
     opt.n_samples_each_region{order_fromfirst} = n_samples_each_region;
     clear thresholdLength thresholdAngle n_samples_each_region
 end
-fprintf([num2str(toc), ' seconds \n']);
 
 info.opt = opt;
 featureWeight = cell(1, opt.subjectNumber);
@@ -86,7 +85,7 @@ for subjecti = 1:opt.subjectNumber
     
     fprintf('\n\n========================================================= \n Current test subject: #%02d\n', subjecti);
     RET = {};
-    [RET.mInfo_tune, RET.mNSS_tune, RET.opt_ret] = calcuModel(opt, allFixations, ALLFeatures, subjecti);
+    [RET.mInfo_tune, RET.mNSS_tune, RET.opt_ret] = calcuModel(opt, EXPALLFixations, ALLFeatures, faceFeatures, subjecti);
     featureWeight{subjecti} = RET;
     clear RET
     
