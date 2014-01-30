@@ -86,7 +86,7 @@ for subjecti = 1:opt.subjectNumber
     
     fprintf('\n\n========================================================= \n Current test subject: #%02d\n', subjecti);
     RET = {};
-    [RET.mInfo_tune, RET.mNSS_tune, RET.opt_ret] = calcuModel(opt,allFixations, subjecti);
+    [RET.mInfo_tune, RET.mNSS_tune, RET.opt_ret] = calcuModel(opt, allFixations, ALLFeatures, subjecti);
     featureWeight{subjecti} = RET;
     clear RET
     

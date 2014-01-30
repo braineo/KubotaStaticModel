@@ -8,7 +8,7 @@
 % faceFeature: Gaussian face feature
 % subjectIndex: ID of test subject
 
-function  [mInfo_tune, mNSS_tune, opt] = calcuModel(opt_set, EXPALLFixations, featureGBVS, faceFeatures, sampleinfo, sampleinfoStat,subjecti)
+function  [mInfo_tune, mNSS_tune, opt] = calcuModel(opt_set, EXPALLFixations, featureMaps, faceFeatures,subjecti)
     tic
     opt = opt_set;
     opt.start_time = datestr(now,'dd-mmm-yyyy HH:MM:SS');
@@ -32,99 +32,20 @@ function  [mInfo_tune, mNSS_tune, opt] = calcuModel(opt_set, EXPALLFixations, fe
     countNearAll = 0;
     countFarAll = 0;
 
-    order_fromfirst = opt.n_order_fromfirst;
-
     for imagei = opt.trainImgIndex
         % postive and negative sample (pixel position)
         sampleinfo = makeSampleInfo(opt, allFixations, subjecti, imagei);
-        for regioni = 1:opt.n_region
-            posPointer = 1;
-            negPointer = 1;
-            allPositiveSampleInRegion = zeros(sampleinfoStat{subjecti}.PositiveRegion(regioni),8);
-            allNegativeSampleInRegion = zeros(sampleinfoStat{subjecti}.NegativeRegion(regioni),8);
-
-           for imgidx = opt.trainImgIndex
-               if(ismember(imgidx, sampleinfoStat{subjecti}.EmptyCell))
-                   continue;
-               end
-               if(~isempty(sampleinfo{subjecti}{imgidx}{1}{regioni}))
-                   sizePos = size(sampleinfo{subjecti}{imgidx}{1}{regioni},1);
-                   allPositiveSampleInRegion(posPointer: posPointer+sizePos-1,:) = sampleinfo{subjecti}{imgidx}{1}{regioni};
-                   posPointer = posPointer + sizePos;
-               end
-               if(~isempty(sampleinfo{subjecti}{imgidx}{2}{regioni}))
-                   sizeNeg = size(sampleinfo{subjecti}{imgidx}{2}{regioni},1);
-                   allNegativeSampleInRegion(negPointer: negPointer+sizeNeg-1,:) = sampleinfo{subjecti}{imgidx}{2}{regioni};
-                   negPointer = negPointer + sizeNeg;
-               end
-           end
-           
-           allPositiveSampleInRegion = allPositiveSampleInRegion(1:posPointer-1,:);
-           allNegativeSampleInRegion = allNegativeSampleInRegion(1:negPointer-1,:);
-           
-           selectedPositiveSample = [selectedPositiveSample;allPositiveSampleInRegion];
-           selectedNegativeSample = [selectedNegativeSample;allNegativeSampleInRegion];
+        if(isempty(sampleinfo))
+            continue
         end
-
-        fprintf([num2str(toc), ' seconds \n']);
-        fprintf('Creating feature matrix...\n'); tic
-        imgUsed = [selectedPositiveSample(:,1) ; selectedNegativeSample(:,1)];
-        imgUsed = unique(imgUsed)';
-
-        %% Postive Sample values
-        for imgIdx = imgUsed
-            c1 = imresize(featureGBVS{imgIdx}.graphbase.scale_maps{1}{1}, [M N], 'bilinear');
-            c2 = imresize(featureGBVS{imgIdx}.graphbase.scale_maps{1}{2}, [M N], 'bilinear');
-            c3 = imresize(featureGBVS{imgIdx}.graphbase.scale_maps{1}{3}, [M N], 'bilinear');
-            i1 = imresize(featureGBVS{imgIdx}.graphbase.scale_maps{2}{1}, [M N], 'bilinear');
-            i2 = imresize(featureGBVS{imgIdx}.graphbase.scale_maps{2}{2}, [M N], 'bilinear');
-            i3 = imresize(featureGBVS{imgIdx}.graphbase.scale_maps{2}{3}, [M N], 'bilinear');
-            o1 = imresize(featureGBVS{imgIdx}.graphbase.scale_maps{3}{1}, [M N], 'bilinear');
-            o2 = imresize(featureGBVS{imgIdx}.graphbase.scale_maps{3}{2}, [M N], 'bilinear');
-            o3 = imresize(featureGBVS{imgIdx}.graphbase.scale_maps{3}{3}, [M N], 'bilinear');
-
-            color = imresize(featureGBVS{imgIdx}.graphbase.top_level_feat_maps{1}, [M N], 'bilinear');
-            intensity = imresize(featureGBVS{imgIdx}.graphbase.top_level_feat_maps{2}, [M N], 'bilinear');
-            orientation = imresize(featureGBVS{imgIdx}.graphbase.top_level_feat_maps{3}, [M N], 'bilinear');
-            face = imresize(faceFeatures{imgIdx}, [M N], 'bilinear');
-
-            posIdx = find(selectedPositiveSample(:,1) == imgIdx)';
-            negIdx = find(selectedNegativeSample(:,1) == imgIdx)';
-
-            for i = posIdx
-                singleSample = selectedPositiveSample(i,:);
-                angleIndex = singleSample(8);
-                regioni = singleSample(6);
-                countNearAll = countNearAll + 1;
-
-                singleFeature = [c1(singleSample(3),singleSample(2)) c2(singleSample(3),singleSample(2)) c3(singleSample(3),singleSample(2))...
-                                 i1(singleSample(3),singleSample(2)) i2(singleSample(3),singleSample(2)) i3(singleSample(3),singleSample(2))...
-                                 o1(singleSample(3),singleSample(2)) o2(singleSample(3),singleSample(2)) o3(singleSample(3),singleSample(2)) face(singleSample(3),singleSample(2))];
-                if(opt.enable_angle)
-                    featurePixelValueNear(countNearAll,num_feat_A*3*(regioni-1)+(angleIndex-1)*num_feat_A+1:num_feat_A*3*(regioni-1)+angleIndex*num_feat_A)=singleFeature(:);
-                else
-                    featurePixelValueNear(countNearAll,num_feat_A*(regioni-1)+1:num_feat_A*regioni)=singleFeature(:);
-                end
-            end
-
-            %% Negative Samples
-            for i = negIdx
-                singleSample = selectedNegativeSample(i,:);
-                angleIndex = singleSample(8);
-                regioni = singleSample(6);
-                countFarAll = countFarAll + 1;
-
-                singleFeature = [c1(singleSample(3),singleSample(2)) c2(singleSample(3),singleSample(2)) c3(singleSample(3),singleSample(2))...
-                                 i1(singleSample(3),singleSample(2)) i2(singleSample(3),singleSample(2)) i3(singleSample(3),singleSample(2))...
-                                 o1(singleSample(3),singleSample(2)) o2(singleSample(3),singleSample(2)) o3(singleSample(3),singleSample(2)) face(singleSample(3),singleSample(2))];
-                if(opt.enable_angle)
-                    featurePixelValueFar(countFarAll,num_feat_A*3*(regioni-1)+(angleIndex-1)*num_feat_A+1:num_feat_A*3*(regioni-1)+angleIndex*num_feat_A)=singleFeature(:);
-                else
-                    featurePixelValueFar(countFarAll,num_feat_A*(regioni-1)+1:num_feat_A*regioni)=singleFeature(:);
-                end
-            end
-        end
-        fprintf([num2str(toc), ' seconds \n']);
+        [pos, neg] = getFeatureSample(opt, sampleinfo, videoi);
+        posSize = size(pos, 1);
+        negSize = size(neg, 1);
+        featurePixelValueNear(countNearAll+1: countNearAll+posSize, :) = pos;
+        featurePixelValueFar(countFarAll+1: countFarAll+negSize, :) = neg;
+        countNearAll = countNearAll + posSize;
+        countFarAll = countFarAll + negSize;   
+    end
 
         %%  start to train
 
